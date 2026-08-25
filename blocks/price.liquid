@@ -90,6 +90,14 @@
   {%- endif -%}
 </product-price>
 
+{% stylesheet %}
+  /* Figma shows the current price in a heavier weight than the struck-through
+     compare-at price; only .price (not .compare-at-price) gets bolded. */
+  .product-card product-price .price-item__group.price {
+    font-weight: 600;
+  }
+{% endstylesheet %}
+
 {% render 'payment-terms-styles' %}
 
 {% schema %}

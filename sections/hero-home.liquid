@@ -1,0 +1,599 @@
+{% liquid
+  assign settings = section.settings
+%}
+
+<div
+  class="hero-home"
+  style="
+    background-color: {{ settings.background_color }};
+    --hero-home-accent-color: {{ settings.accent_color }};
+    --hero-home-button-2-background: {{ settings.button_2_background }};
+  "
+>
+  <div class="hero-home__media">
+    {% if settings.image != blank %}
+      {{
+        settings.image
+        | image_url: width: 1600
+        | image_tag:
+          loading: 'eager',
+          fetchpriority: 'high',
+          sizes: '(min-width: 750px) 100vw, 100vw',
+          widths: '375,750,1100,1600,1920',
+          class: 'hero-home__image'
+      }}
+    {% endif %}
+  </div>
+
+  <div class="hero-home__gradient"></div>
+
+  <div class="hero-home__container">
+    <div class="hero-home__content">
+      <div class="hero-home__text">
+        {% if settings.show_rating %}
+          <div class="hero-home__rating">
+            <span class="hero-home__stars">
+              {% for i in (1..5) %}
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                  {%- render 'icon', icon: 'hero-rating-star' -%}
+                </svg>
+              {% endfor %}
+            </span>
+            <span class="hero-home__rating-text">{{ settings.rating_text }}</span>
+          </div>
+        {% endif %}
+
+        <h2 class="hero-home__heading">{{ settings.heading }}</h2>
+
+        <div class="hero-home__feature-line">
+          <span>{{ settings.feature_text_1 }}</span>
+          <span>{{ settings.feature_text_2 }}</span>
+          <span class="hero-home__feature-highlight">{{ settings.feature_text_3 }}</span>
+        </div>
+
+        <div class="hero-home__description">{{ settings.description }}</div>
+      </div>
+
+      <div class="hero-home__buttons">
+        {% if settings.button_1_label != blank %}
+          <a href="{{ settings.button_1_link | default: '#' }}" class="hero-home__button hero-home__button--primary">
+            {{ settings.button_1_label }}
+          </a>
+        {% endif %}
+        {% if settings.button_2_label != blank %}
+          <a href="{{ settings.button_2_link | default: '#' }}" class="hero-home__button hero-home__button--secondary">
+            {{ settings.button_2_label }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if settings.show_live_card %}
+      <div class="hero-home__live-card">
+        <div class="hero-home__live-head">
+          {% if settings.live_card_avatar != blank %}
+            <span class="hero-home__live-avatar">
+              {{ settings.live_card_avatar | image_url: width: 80 | image_tag: width: 40, height: 40, widths: '40,80' }}
+            </span>
+          {% endif %}
+          <span class="hero-home__live-title">{{ settings.live_card_title }}</span>
+          <span class="hero-home__live-brand">{{ settings.live_card_brand }}</span>
+        </div>
+        <p class="hero-home__live-tagline">{{ settings.live_card_tagline }}</p>
+        <p class="hero-home__live-caption">{{ settings.live_card_caption }}</p>
+        <a
+          href="{{ settings.live_card_link | default: '#' }}"
+          class="hero-home__live-button"
+          {% if settings.live_card_link == blank %}
+            aria-disabled="true"
+            tabindex="-1"
+          {% endif %}
+        >
+          <span class="hero-home__live-dot" aria-hidden="true"></span>
+          {{ settings.live_card_button_label }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .hero-home {
+    position: relative;
+    overflow: hidden;
+
+    @media screen and (min-width: 750px) {
+      min-height: 630px;
+    }
+  }
+
+  .hero-home__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+
+    @media screen and (min-width: 750px) {
+      /* Figma sizes the image itself (not the section) to sit on the right:
+         full height, width following the image's own aspect ratio - it does
+         not stretch to fill the section's full width. */
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      inset-inline-start: auto;
+      width: auto;
+      aspect-ratio: auto;
+    }
+  }
+
+  .hero-home__image {
+    display: block;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+
+    @media screen and (max-width: 749px) {
+      width: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* Washes the left/text portion white, blending into the image on the right —
+     matches the Figma overlay. The image itself is full-bleed behind this;
+     the gradient is what actually keeps the text area visually on white/beige. */
+  .hero-home__gradient {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      display: block;
+      position: absolute;
+      z-index: 1;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: 68%;
+      background: linear-gradient(265.84deg, rgba(255, 255, 255, 0) 2.95%, rgb(255, 255, 255) 36.29%);
+      pointer-events: none;
+    }
+  }
+
+  /* The actual 1360px content container — background stays full-bleed above,
+     but the text and live card both live inside this and align to its edges,
+     the same way the header/announcement bar containers work. */
+  .hero-home__container {
+    position: relative;
+    z-index: 2;
+
+    @media screen and (min-width: 750px) {
+      position: absolute;
+      inset: 0;
+      max-width: 1360px;
+      margin-inline: auto;
+    }
+  }
+
+  .hero-home__live-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: auto;
+    margin: 16px;
+    padding: 15px 18px 16px;
+    background: #000;
+    border: 1px solid #fff;
+    color: #fff;
+
+    @media screen and (min-width: 750px) {
+      position: absolute;
+      inset-inline-end: 48px;
+      bottom: 60px;
+      width: 296px;
+      margin: 0;
+    }
+  }
+
+  .hero-home__live-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .hero-home__live-avatar {
+    display: flex;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  .hero-home__live-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-home__live-title {
+    font-family: var(--font-subheading--family);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .hero-home__live-brand {
+    font-family: var(--font-body--family);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .hero-home__live-tagline {
+    margin: 0;
+    font-family: var(--font-body--family);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .hero-home__live-caption {
+    margin: 0;
+    font-family: var(--font-body--family);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .hero-home__live-button {
+    position: relative;
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 8px;
+    padding: 8.5px 16px;
+    background: #fff;
+    color: #111;
+    font-family: var(--font-body--family);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.83;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .hero-home__live-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--minimum-touch-target, 44px));
+    height: max(100%, var(--minimum-touch-target, 44px));
+    transform: translate(-50%, -50%);
+  }
+
+  .hero-home__live-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--hero-home-accent-color, #a64a4c);
+    flex-shrink: 0;
+  }
+
+  .hero-home__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    padding: 40px 20px;
+
+    @media screen and (min-width: 750px) {
+      /* Shrinks to its own content width (537px text + 80px padding each
+         side), positioned against the container's start edge and vertically
+         centered — the media fills everything else since it's a full-bleed
+         absolute layer behind the container, not a layout sibling. */
+      position: absolute;
+      inset-inline-start: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      gap: 48px;
+      padding-inline: 80px;
+    }
+  }
+
+  .hero-home__text {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    max-width: 537px;
+  }
+
+  .hero-home__rating {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: var(--hero-home-badge-background, #faf8f5);
+    border-radius: 9999px;
+    width: fit-content;
+  }
+
+  .hero-home__stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .hero-home__stars svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .hero-home__rating-text {
+    font-family: var(--font-body--family);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--hero-home-badge-text-color, #2b2c2b);
+    white-space: nowrap;
+  }
+
+  .hero-home__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 48px;
+    line-height: 1;
+    color: var(--hero-home-accent-color, #a64a4c);
+
+    @media screen and (min-width: 750px) {
+      font-size: 86px;
+    }
+  }
+
+  .hero-home__feature-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: var(--font-body--family);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.57;
+    color: var(--hero-home-feature-color, #050505);
+
+    @media screen and (min-width: 750px) {
+      font-size: 23px;
+      line-height: 1.57;
+    }
+  }
+
+  .hero-home__feature-highlight {
+    color: var(--hero-home-accent-color, #a64a4c);
+  }
+
+  .hero-home__description {
+    font-family: var(--font-body--family);
+    font-size: 16px;
+    line-height: 1.56;
+    color: var(--hero-home-description-color, #4d4b4e);
+
+    @media screen and (min-width: 750px) {
+      font-size: 18px;
+    }
+
+    em {
+      font-style: normal;
+      color: var(--hero-home-accent-color, #a64a4c);
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .hero-home__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hero-home__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 15px 24px;
+    font-family: var(--font-body--family);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.625;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .hero-home__button--primary {
+    background: var(--hero-home-accent-color, #a64a4c);
+    color: #fff;
+  }
+
+  .hero-home__button--secondary {
+    background: var(--hero-home-button-2-background, #101010);
+    color: #fff;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.hero_home",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#f1e3d8"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "t:settings.accent_color",
+      "default": "#a64a4c"
+    },
+    {
+      "type": "header",
+      "content": "t:content.rating_badge"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "t:settings.show_rating_badge",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "rating_text",
+      "label": "t:settings.text",
+      "default": "500+ verified 5-star reviews",
+      "visible_if": "{{ section.settings.show_rating }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Aria & Co."
+    },
+    {
+      "type": "header",
+      "content": "t:content.feature_line"
+    },
+    {
+      "type": "text",
+      "id": "feature_text_1",
+      "label": "t:settings.first_word",
+      "default": "Education."
+    },
+    {
+      "type": "text",
+      "id": "feature_text_2",
+      "label": "t:settings.second_word",
+      "default": "Community."
+    },
+    {
+      "type": "text",
+      "id": "feature_text_3",
+      "label": "t:settings.third_word_highlighted",
+      "default": "Confidence."
+    },
+    {
+      "type": "header",
+      "content": "t:content.description"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:settings.description",
+      "info": "t:info.hero_description_highlight",
+      "default": "<p>Helping women discover confidence through <em>beautiful wigs,</em> trusted <em>education</em>, and a community that <em>understands.</em></p>"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_1_label",
+      "label": "t:settings.first_button_label",
+      "default": "Shop In-Stock Wigs"
+    },
+    {
+      "type": "url",
+      "id": "button_1_link",
+      "label": "t:settings.first_button_link"
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "t:settings.second_button_label",
+      "default": "Meet the Founder"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "t:settings.second_button_link"
+    },
+    {
+      "type": "color",
+      "id": "button_2_background",
+      "label": "t:settings.second_button_background",
+      "default": "#101010"
+    },
+    {
+      "type": "header",
+      "content": "t:content.live_card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_live_card",
+      "label": "t:settings.show_live_card",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "live_card_avatar",
+      "label": "t:settings.avatar_image",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "text",
+      "id": "live_card_title",
+      "label": "t:settings.title",
+      "default": "Live with",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "text",
+      "id": "live_card_brand",
+      "label": "t:settings.brand_name",
+      "default": "Aria & Co.",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "text",
+      "id": "live_card_tagline",
+      "label": "t:settings.tagline",
+      "default": "Join us live on Facebook",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "text",
+      "id": "live_card_caption",
+      "label": "t:settings.caption",
+      "default": "See the wigs. Ask questions. Laugh with friends.",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "text",
+      "id": "live_card_button_label",
+      "label": "t:settings.button_label",
+      "default": "Watch Live",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    },
+    {
+      "type": "url",
+      "id": "live_card_link",
+      "label": "t:settings.link",
+      "visible_if": "{{ section.settings.show_live_card }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.hero_home"
+    }
+  ]
+}
+{% endschema %}

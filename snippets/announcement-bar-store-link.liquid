@@ -1,0 +1,25 @@
+{% doc %}
+  Renders a single store badge link (App Store / Google Play) for the announcement bar.
+
+  @param {string} link - The destination URL for the badge.
+  @param {string} label - The visible label text.
+  @param {string} icon - The icon name to render, passed straight to the `icon` snippet.
+{% enddoc %}
+
+{%- if label != blank -%}
+  <a
+    href="{{ link | default: '#' }}"
+    class="announcement-bar__store-link"
+    {% if link == blank %}
+      aria-disabled="true"
+      tabindex="-1"
+    {% endif %}
+  >
+    <span class="announcement-bar__store-icon">
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        {%- render 'icon', icon: icon -%}
+      </svg>
+    </span>
+    <span class="announcement-bar__store-label">{{ label }}</span>
+  </a>
+{%- endif -%}

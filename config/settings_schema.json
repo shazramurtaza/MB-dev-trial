@@ -27,13 +27,25 @@
       },
       {
         "type": "range",
+        "id": "logo_width",
+        "label": "t:settings.width",
+        "min": 20,
+        "max": 400,
+        "step": 4,
+        "unit": "px",
+        "default": 152,
+        "visible_if": "{{ settings.logo != blank or settings.logo_inverse != blank }}",
+        "info": "t:info.logo_width"
+      },
+      {
+        "type": "range",
         "id": "logo_height",
         "label": "t:settings.desktop_height",
         "min": 12,
         "max": 100,
         "step": 1,
         "unit": "px",
-        "default": 36,
+        "default": 40,
         "visible_if": "{{ settings.logo != blank or settings.logo_inverse != blank }}",
         "info": "t:info.logo_height"
       },

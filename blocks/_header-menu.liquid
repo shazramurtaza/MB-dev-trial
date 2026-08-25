@@ -93,6 +93,9 @@
 
     {% capture children %}
       {% for link in block_settings.menu.links %}
+        {%- liquid
+          assign link_title_downcase = link.title | strip | downcase
+        -%}
         <li
           class="menu-list__list-item"
           on:blur="/deactivate"
@@ -111,7 +114,12 @@
             {% endif %}
             ref="menuitem"
           >
-            <span class="menu-list__link-title">{{- link.title -}}</span>
+            <span class="menu-list__link-title">
+              {{- link.title -}}
+              {%- if link_title_downcase == 'live' -%}
+                <span class="menu-list__live-dot" aria-hidden="true"></span>
+              {%- endif -%}
+            </span>
           </a>
           {%- if link.links != blank -%}
             <button
@@ -197,7 +205,13 @@
         <nav
           class="menu-list"
           aria-label="{{ 'accessibility.header_navigation_label' | t }}"
-          style="{% render 'menu-font-styles', settings: block_settings, menu_type: 'mega_menu' %}"
+          style="
+            {% render 'menu-font-styles', settings: block_settings, menu_type: 'mega_menu' %}
+            {% if block_settings.hover_text_color != blank %}
+              --menu-hover-text-color: {{ block_settings.hover_text_color }};
+            {% endif %}
+            --menu-live-dot-color: {{ block_settings.live_dot_color }};
+          "
         >
           {% assign class = 'overflow-menu' | append: background_color_classes %}
           {% render 'overflow-list',
@@ -292,6 +306,25 @@
     height: 100%;
   }
 
+  /* The real top-level items render inside <overflow-list>'s shadow DOM
+     ([part="list"]), which this theme hard-zeros (see .overflow-menu::part(list)
+     below) — so --menu-horizontal-gap alone never affected visible spacing.
+     Figma wants a flat 24px between items and nothing from the link's own
+     padding, so: zero that padding and drive the real shadow-part gap directly. */
+  .menu-list:not(.menu-list--mobile) {
+    --menu-horizontal-gap: 24px;
+  }
+
+  .menu-list:not(.menu-list--mobile) .menu-list__link-title {
+    padding-inline: 0;
+  }
+
+  /* Items with a dropdown still need room for the chevron; give that room
+     back on the end side only, so it doesn't throw off the 24px item gap. */
+  .menu-list:not(.menu-list--mobile) .menu-list__trigger .menu-list__link-title {
+    padding-inline-end: 20px;
+  }
+
   .menu-list__list {
     display: flex;
     justify-content: var(--grid-area-alignment);
@@ -370,16 +403,16 @@
     padding-block: var(--padding-sm);
     color: var(--menu-top-level-font-color);
     cursor: pointer;
-    opacity: 0;
+    opacity: 1;
     transform: translateY(-50%);
     outline-offset: 0.1em;
 
-    /* Hidden control must not intercept pointer events; hover-open is driven by
-       the list item itself. */
+    /* The visible chevron is decorative (hover on the list item is what opens
+       the submenu); keep it out of the way of pointer events so hover-open
+       isn't interrupted, but it stays focusable for keyboard users. */
     pointer-events: none;
 
     &:focus-visible {
-      opacity: 1;
       pointer-events: auto;
     }
   }
@@ -417,17 +450,9 @@
     content: none;
   }
 
-  /*
-    High specificity selectors to subdue non-hovered links without javascript.
-    If the need for js-generated `hovered` and `focused` classes arises for another reason we can simplify these.
-  */
-  .menu-list:where(:has(.menu-list__list-item:hover)),
-  .menu-list:where(:has(.menu-list__list-item:focus-within)),
-  .menu-list:where(:has(.menu-list__list-item:not([aria-hidden='true']) .menu-list__link--active)) {
-    .menu-list__link {
-      color: rgb(var(--menu-top-level-font-color-rgb) / var(--opacity-subdued-text));
-    }
-  }
+  /* All top-level links stay the same color regardless of hover/active/current-page
+     state (per design, the dimming/highlighting this theme does by default is
+     intentionally disabled here). */
 
   /* stylelint-disable-next-line selector-max-specificity */
   .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link--active,
@@ -436,11 +461,31 @@
     color: var(--menu-top-level-font-color);
   }
 
+  .menu-list .menu-list__list-item:where(:hover, :focus-within) .menu-list__link:where(:not([aria-haspopup])),
+  .menu-list .menu-list__list-item:where(:hover, :focus-within) .menu-list__link .menu-list__link-title {
+    color: var(--menu-hover-text-color, var(--menu-top-level-font-color));
+    text-decoration: underline;
+  }
+
+  .menu-list .menu-list__list-item:where(:hover, :focus-within) .menu-list__disclosure {
+    color: var(--menu-hover-text-color, var(--menu-top-level-font-color));
+  }
+
+  .menu-list__live-dot {
+    display: inline-block;
+    vertical-align: super;
+    width: 6px;
+    height: 6px;
+    margin-inline-start: 4px;
+    border-radius: 50%;
+    background-color: var(--menu-live-dot-color, currentColor);
+  }
+
   .overflow-menu::part(list) {
     /* Make sure focus outline is not cut off by overflow hidden */
     --focus-outline-size: calc(var(--focus-outline-offset) + var(--focus-outline-width));
 
-    gap: 0;
+    gap: var(--menu-horizontal-gap);
     margin-inline: calc(-1 * var(--menu-horizontal-gap) / 2);
   }
 
@@ -842,6 +887,19 @@
       "id": "text_color",
       "label": "t:settings.text_color",
       "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "t:settings.hover_text_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "live_dot_color",
+      "label": "t:settings.live_dot_color",
+      "info": "t:info.live_dot_info",
+      "default": "#a64a4c"
     },
     {
       "type": "header",

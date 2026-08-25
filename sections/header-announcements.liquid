@@ -13,7 +13,16 @@
 <div class="section-background color-custom-{{ section.id }}"></div>
 <aside
   class="announcement-bar spacing-style section section--{{ section.settings.section_width }} color-custom-{{ section.id }}"
-  style="{% render 'spacing-padding', settings: section.settings %}; --border-bottom-width: {{ section.settings.divider_width }}px;{% if section.settings.divider_color != blank %} --color-border: {{ section.settings.divider_color }};{% endif %}"
+  style="
+    --padding-block-start: {{ section.settings['padding-block-start'] }}px;
+    --padding-block-end: {{ section.settings['padding-block-end'] }}px;
+    --announcement-bar-padding-inline-start: {{ section.settings['padding-inline-start'] }}px;
+    --announcement-bar-padding-inline-end: {{ section.settings['padding-inline-end'] }}px;
+    --border-bottom-width: {{ section.settings.divider_width }}px;
+    {% if section.settings.divider_color != blank %}
+      --color-border: {{ section.settings.divider_color }};
+    {% endif %}
+  "
 >
   {% liquid
     assign autoplay = false
@@ -22,27 +31,74 @@
       assign autoplay = true
       assign show_arrows = true
     endif
+
+    assign show_store_links = false
+    if section.settings.show_app_store_button or section.settings.show_google_play_button
+      assign show_store_links = true
+    endif
   %}
 
-  <announcement-bar-component
-    class="announcement-bar__slider"
-    {% if autoplay == true %}
-      autoplay="{{ section.settings.speed }}" aria-live="polite"
-    {% endif %}
-  >
-    {% if show_arrows %}
-      {% render 'slideshow-arrows', icon_style: 'chevron' %}
-    {% endif %}
+  <div class="announcement-bar__row">
+    <announcement-bar-component
+      class="announcement-bar__slider"
+      {% if autoplay == true %}
+        autoplay="{{ section.settings.speed }}" aria-live="polite"
+      {% endif %}
+    >
+      {% if show_arrows %}
+        {% render 'slideshow-arrows', icon_style: 'chevron' %}
+      {% endif %}
 
-    <div class="announcement-bar__slides">
-      {% content_for 'blocks' %}
-    </div>
-  </announcement-bar-component>
+      <div class="announcement-bar__slides">
+        {% content_for 'blocks' %}
+      </div>
+    </announcement-bar-component>
+
+    {% if show_store_links %}
+      <div class="announcement-bar__store-links">
+        {% if section.settings.show_app_store_button %}
+          {% render 'announcement-bar-store-link',
+            link: section.settings.app_store_link,
+            label: section.settings.app_store_label,
+            icon: 'app-store'
+          %}
+        {% endif %}
+        {% if section.settings.show_google_play_button %}
+          {% render 'announcement-bar-store-link',
+            link: section.settings.google_play_link,
+            label: section.settings.google_play_label,
+            icon: 'google-play'
+          %}
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
 </aside>
 
 {% stylesheet %}
   .announcement-bar {
     border-block-end: var(--border-bottom-width) solid var(--color-border);
+
+    /* Below 750px, the merchant's desktop inline padding is capped to the theme's
+       standard page margin so long announcement text doesn't wrap excessively;
+       the merchant-configured value applies as-is from 750px up. */
+    --padding-inline-start: var(--page-margin);
+    --padding-inline-end: var(--page-margin);
+
+    @media screen and (min-width: 750px) {
+      --padding-inline-start: var(--announcement-bar-padding-inline-start);
+      --padding-inline-end: var(--announcement-bar-padding-inline-end);
+    }
+  }
+
+  .announcement-bar__row {
+    max-width: 1360px;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
   }
 
   .announcement-bar__slider {
@@ -50,10 +106,60 @@
     flex-direction: row;
     align-items: center;
     position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
 
     @media screen and (max-width: 749px) {
       grid-column: 1 / -1;
     }
+  }
+
+  .announcement-bar__store-links {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+
+    @media screen and (max-width: 749px) {
+      display: none;
+    }
+  }
+
+  .announcement-bar__store-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px 1px 2px;
+    background-color: #000;
+    border-radius: 2px;
+    text-decoration: none;
+  }
+
+  /* Expands the tap target to the theme's 44px minimum without growing the visible badge */
+  .announcement-bar__store-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--minimum-touch-target, 44px));
+    height: max(100%, var(--minimum-touch-target, 44px));
+    transform: translate(-50%, -50%);
+  }
+
+  .announcement-bar__store-icon {
+    display: flex;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  .announcement-bar__store-label {
+    font-family: var(--font-body--family);
+    font-size: 11px;
+    line-height: 1.5;
+    color: #fff;
+    white-space: nowrap;
   }
 
   .announcement-bar__slides {
@@ -164,13 +270,56 @@
           "label": "t:options.full"
         }
       ],
-      "default": "page-width"
+      "default": "full-width"
     },
     {
       "type": "color",
       "id": "background_color",
       "label": "t:settings.background_color",
-      "placeholder": "t:settings.default"
+      "placeholder": "t:settings.default",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "t:content.app_links"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_app_store_button",
+      "label": "t:settings.show_app_store_button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "app_store_label",
+      "label": "t:settings.app_store_label",
+      "default": "App Store",
+      "visible_if": "{{ section.settings.show_app_store_button }}"
+    },
+    {
+      "type": "url",
+      "id": "app_store_link",
+      "label": "t:settings.app_store_link",
+      "visible_if": "{{ section.settings.show_app_store_button }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_google_play_button",
+      "label": "t:settings.show_google_play_button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "google_play_label",
+      "label": "t:settings.google_play_label",
+      "default": "Google Play",
+      "visible_if": "{{ section.settings.show_google_play_button }}"
+    },
+    {
+      "type": "url",
+      "id": "google_play_link",
+      "label": "t:settings.google_play_link",
+      "visible_if": "{{ section.settings.show_google_play_button }}"
     },
     {
       "type": "range",
@@ -201,7 +350,7 @@
       "max": 100,
       "step": 1,
       "unit": "px",
-      "default": 15
+      "default": 10
     },
     {
       "type": "range",
@@ -211,7 +360,27 @@
       "max": 100,
       "step": 1,
       "unit": "px",
-      "default": 15
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 56
     }
   ],
   "presets": [

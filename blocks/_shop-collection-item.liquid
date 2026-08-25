@@ -1,0 +1,88 @@
+{% liquid
+  assign display_collection = block.settings.collection
+  assign display_title = block.settings.custom_title | default: display_collection.title
+  assign display_image = block.settings.custom_image | default: display_collection.image
+%}
+
+<a
+  href="{{ display_collection.url | default: '#' }}"
+  class="shop-collection-item"
+  {% if display_collection == blank %}
+    aria-disabled="true"
+    tabindex="-1"
+  {% endif %}
+  {{ block.shopify_attributes }}
+>
+  <span class="shop-collection-item__image-wrap">
+    {% render 'image', image: display_image, height: 800, alt_text_fallback: display_title, class: 'shop-collection-item__image' %}
+  </span>
+  {% if display_title != blank %}
+    <span class="shop-collection-item__title">{{ display_title }}</span>
+  {% endif %}
+</a>
+
+{% stylesheet %}
+  .shop-collection-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .shop-collection-item__image-wrap {
+    display: block;
+    width: 100%;
+    aspect-ratio: 320 / 418;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #e5e5e5;
+  }
+
+  .shop-collection-item__image-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .shop-collection-item__title {
+    font-family: var(--font-body--family);
+    font-size: 24px;
+    line-height: 1.33;
+    color: #000;
+    text-align: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.shop_collection_item",
+  "tag": null,
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:settings.collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "custom_image",
+      "label": "t:settings.custom_image",
+      "info": "t:info.collection_card_custom_image"
+    },
+    {
+      "type": "text",
+      "id": "custom_title",
+      "label": "t:settings.custom_title",
+      "info": "t:info.collection_card_custom_title"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.shop_collection_item"
+    }
+  ]
+}
+{% endschema %}

@@ -86,6 +86,7 @@
 
   capture menu
     content_for 'block', type: '_header-menu', id: 'header-menu'
+    render 'header-preorder-button', section: section
   endcapture
 
   capture drawer_menu
@@ -129,7 +130,11 @@
     endif
   endif
   capture search
-    render 'search', style: search_style, class: search_class, display_style: section.settings.actions_display_style
+    if search_style != 'none' and section.settings.search_display_style == 'inline'
+      render 'header-search-input', class: search_class, text_color: section.settings.text_color_top, placeholder: section.settings.search_placeholder
+    else
+      render 'search', style: search_style, class: search_class, display_style: section.settings.actions_display_style
+    endif
   endcapture
 
   # Skip drawer search under specific conditions:
@@ -345,6 +350,14 @@
   style="
     --color-background-top-row: rgba({{ section.settings.background_color_top.rgba | default: settings.page_background_color.rgba }});
     --color-background-bottom-row: rgba({{ section.settings.background_color_bottom.rgba | default: settings.page_background_color.rgba }});
+    --header-padding: {{ section.settings.header_vertical_padding }}px;
+    --header-action-button-size: {{ section.settings.action_button_size }}px;
+    {% if section.settings.action_button_background_color != blank %}
+      --header-action-button-background: {{ section.settings.action_button_background_color }};
+    {% endif %}
+    {% if section.settings.action_button_border_color != blank %}
+      --header-action-button-border: {{ section.settings.action_button_border_color }};
+    {% endif %}
     {% if transparent and text_color_transparent != blank %}
       --color-transparent-text: {{ text_color_transparent }};
       --color-transparent-text-rgb: {{ text_color_transparent.rgb }};
@@ -502,6 +515,18 @@
   @media screen and (min-width: 750px) {
     #header-component[data-menu-style='menu'] :is(.header-menu, .dropdown-localization) {
       display: flex;
+    }
+  }
+
+  /* The pre-order pill sits next to the desktop menu only; the mobile drawer
+     header has no room for it and no Figma spec for how it should behave there. */
+  #header-component .header-preorder-button {
+    display: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    #header-component[data-menu-style='menu'] .header-preorder-button {
+      display: inline-flex;
     }
   }
 
@@ -788,6 +813,12 @@
     grid-area: left;
   }
 
+  /* Logo↔menu and menu↔pre-order gaps match the 24px used between the
+     top-level menu items themselves. */
+  #header-component .header__column--left {
+    gap: 24px;
+  }
+
   .header__column--center {
     justify-content: center;
     grid-area: center;
@@ -816,6 +847,10 @@
 
     /* Mobile layout */
     --header-mobile-bookend: 44px;
+
+    max-width: 1360px;
+    margin-inline: auto;
+    width: 100%;
 
     display: grid;
     grid-template-areas: 'left center right';
@@ -958,14 +993,64 @@
     }
   }
 
+  /* Square chip treatment (background + border) matching the Figma action buttons.
+     The visible box can be smaller than 44px, so an invisible pseudo-element
+     expands the actual tap target to the theme's minimum touch size. */
+  #header-component .header-actions__action {
+    position: relative;
+    align-items: center;
+    width: var(--header-action-button-size, 36px);
+    height: var(--header-action-button-size, 36px);
+    background-color: var(--header-action-button-background, transparent);
+    border: 1px solid var(--header-action-button-border, transparent);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--minimum-touch-target, 44px));
+      height: max(100%, var(--minimum-touch-target, 44px));
+      transform: translate(-50%, -50%);
+    }
+  }
+
   .header-actions__action:not(.account-button) .svg-wrapper {
     height: var(--button-size);
     width: var(--button-size);
   }
 
+  #header-component .header-actions__action:not(.account-button) .svg-wrapper {
+    height: 16px;
+    width: 16px;
+  }
+
   .header-actions__action:not(.account-button) svg {
     width: var(--icon-size-md);
     height: var(--icon-size-md);
+  }
+
+  #header-component .header-actions__action:not(.account-button) svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  #header-component .account-button__icon {
+    width: 16px;
+    height: auto;
+  }
+
+  /* The right column's default gap (--gap-xl) and header-actions' negative
+     margin were tuned for a small icon-only search trigger. The inline
+     search field needs the tighter, uniform 8px gap from the Figma spec
+     across [search][account][cart], so override both only in that mode. */
+  #header-component .header__column--right:has(.header-search-input) {
+    gap: 8px;
+  }
+
+  #header-component .header__column--right:has(.header-search-input) header-actions {
+    gap: 8px;
+    margin-inline-start: 0;
   }
 
   .header:has(#Details-menu-drawer-container[open]) {
@@ -1307,6 +1392,30 @@
     },
     {
       "type": "select",
+      "id": "search_display_style",
+      "label": "t:settings.search_display_style",
+      "options": [
+        {
+          "value": "icon",
+          "label": "t:options.icon_opens_modal"
+        },
+        {
+          "value": "inline",
+          "label": "t:options.inline_field"
+        }
+      ],
+      "default": "inline",
+      "visible_if": "{{ section.settings.show_search }}"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "t:settings.placeholder_text",
+      "default": "What are you looking for?",
+      "visible_if": "{{ section.settings.show_search and section.settings.search_display_style == 'inline' }}"
+    },
+    {
+      "type": "select",
       "id": "search_row",
       "label": "t:settings.search_row",
       "options": [
@@ -1491,6 +1600,16 @@
     },
     {
       "type": "range",
+      "id": "header_vertical_padding",
+      "label": "t:settings.header_vertical_padding",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
       "id": "divider_width",
       "label": "t:settings.divider_thickness",
       "min": 0,
@@ -1629,6 +1748,32 @@
       "visible_if": "{{ section.settings.actions_display_style == 'text' }}"
     },
     {
+      "type": "range",
+      "id": "action_button_size",
+      "label": "t:settings.action_button_size",
+      "min": 28,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 36,
+      "visible_if": "{{ section.settings.actions_display_style == 'icon' }}"
+    },
+    {
+      "type": "color",
+      "id": "action_button_background_color",
+      "label": "t:settings.action_button_background_color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.actions_display_style == 'icon' }}"
+    },
+    {
+      "type": "color",
+      "id": "action_button_border_color",
+      "label": "t:settings.action_button_border_color",
+      "alpha": true,
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.actions_display_style == 'icon' }}"
+    },
+    {
       "type": "header",
       "content": "t:content.colors"
     },
@@ -1763,6 +1908,44 @@
       "label": "t:settings.text_color_transparent",
       "placeholder": "t:settings.default",
       "visible_if": "{{ section.settings.enable_transparent_header_collection }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.preorder_button"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_preorder_button",
+      "label": "t:settings.show_preorder_button",
+      "info": "t:info.preorder_button_info",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "preorder_button_label",
+      "label": "t:settings.label",
+      "default": "Pre-Order",
+      "visible_if": "{{ section.settings.show_preorder_button }}"
+    },
+    {
+      "type": "url",
+      "id": "preorder_button_link",
+      "label": "t:settings.link",
+      "visible_if": "{{ section.settings.show_preorder_button }}"
+    },
+    {
+      "type": "color",
+      "id": "preorder_button_background_color",
+      "label": "t:settings.background_color",
+      "default": "#a64a4c",
+      "visible_if": "{{ section.settings.show_preorder_button }}"
+    },
+    {
+      "type": "color",
+      "id": "preorder_button_text_color",
+      "label": "t:settings.text_color",
+      "default": "#ffffff",
+      "visible_if": "{{ section.settings.show_preorder_button }}"
     }
   ],
   "presets": []

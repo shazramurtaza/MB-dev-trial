@@ -101,9 +101,19 @@
     {%- for product_option in product_resource.options_with_values -%}
       {%- liquid
         assign swatch_count = product_option.values | map: 'swatch' | compact | size
+
+        assign has_variant_image_swatch = false
+        if settings.show_variant_image
+          for product_option_value in product_option.values
+            if product_option_value.variant.featured_media
+              assign has_variant_image_swatch = true
+              break
+            endif
+          endfor
+        endif
       -%}
 
-      {% if swatch_count == 0 %}
+      {% if swatch_count == 0 and has_variant_image_swatch == false %}
         {% continue %}
       {% endif %}
 

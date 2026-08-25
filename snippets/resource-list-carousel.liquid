@@ -22,8 +22,13 @@
     assign gutter_style = '--gutter-slide-width: 0px;'
   endif
 
+  assign show_progress_bar = false
+  if settings.show_progress_bar
+    assign show_progress_bar = true
+  endif
+
   assign show_arrows = false
-  if settings.icons_style != 'none'
+  if settings.icons_style != 'none' and show_progress_bar == false
     assign show_arrows = true
   endif
 %}
@@ -38,12 +43,27 @@
   {% endfor %}
 {% endcapture %}
 
+{% capture controls %}
+  {% if show_progress_bar %}
+    <div class="resource-list-carousel__controls">
+      <div class="resource-list-carousel__progress" data-carousel-progress>
+        <div class="resource-list-carousel__progress-fill"></div>
+      </div>
+      <div class="resource-list-carousel__arrows">
+        {%- render 'slideshow-arrow', action: 'previous', icon_style: settings.icons_style, icon_shape: settings.icons_shape -%}
+        {%- render 'slideshow-arrow', action: 'next', icon_style: settings.icons_style, icon_shape: settings.icons_shape -%}
+      </div>
+    </div>
+  {% endif %}
+{% endcapture %}
+
 <div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }};">
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
     slides: slides,
     show_arrows: show_arrows,
+    controls: controls,
     icon_style: settings.icons_style,
     icon_shape: settings.icons_shape,
     auto_hide_controls: false,
@@ -54,9 +74,18 @@
   %}
 </div>
 
+{% if show_progress_bar %}
+  <script type="module" src="{{ 'resource-list-carousel-progress.js' | asset_url }}" fetchpriority="low"></script>
+{% endif %}
+
 {% stylesheet %}
   .resource-list__carousel {
     --slide-width: 60vw;
+    /* No peeking next slide: exactly --column-count cards fill the row, the rest scroll off. */
+    --peek-next-slide-size: 0px;
+    /* No edge gutter either: the row should sit flush with the container, not inset
+       with a sliver of the next card showing past it. */
+    --gutter-slide-width: 0px;
     width: 100%;
     position: relative;
     container-type: inline-size;
@@ -103,6 +132,79 @@
 
   .resource-list__carousel slideshow-arrows {
     padding-inline: var(--util-page-margin-offset);
+  }
+
+  .resource-list-carousel__controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-block-start: 24px;
+  }
+
+  .resource-list-carousel__progress {
+    position: relative;
+    flex: 1 1 auto;
+    height: 4px;
+    background: rgb(188 105 107 / 0.23);
+    border-radius: 30px;
+    overflow: hidden;
+  }
+
+  .resource-list-carousel__progress-fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 20%;
+    background: #bc696b;
+    border-radius: 30px;
+  }
+
+  .resource-list-carousel__arrows {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .resource-list-carousel__arrows .slideshow-control {
+    position: static;
+    display: flex;
+    opacity: 1;
+    width: 60px;
+    height: 60px;
+    min-width: var(--minimum-touch-target);
+    min-height: var(--minimum-touch-target);
+    padding: 0;
+  }
+
+  .resource-list-carousel__arrows .slideshow-control[disabled] {
+    display: flex;
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Colors are hardcoded rather than theme vars: this section can sit on a
+     custom dark background, and --color-foreground/--color-background flip
+     for contrast there, which would paint the previous button's icon the
+     same color as its own background. */
+  .resource-list-carousel__arrows .slideshow-control.slideshow-control--previous {
+    background-color: #fff;
+    color: #1f1f1f;
+    border: 1px solid #a9aab5;
+  }
+
+  .resource-list-carousel__arrows .slideshow-control.slideshow-control--next {
+    width: 64px;
+    height: 64px;
+    background-color: #a64a4c;
+    color: #fff;
+  }
+
+  @media screen and (max-width: 749px) {
+    .resource-list-carousel__arrows .slideshow-control,
+    .resource-list-carousel__arrows .slideshow-control.slideshow-control--next {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   .resource-list__carousel .resource-list__slide {
