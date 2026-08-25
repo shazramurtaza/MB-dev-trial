@@ -22,8 +22,9 @@
     <div
       class="product-card-media-overlay"
       style="
-        inset-inline: {{ block.settings.padding-inline-start | default: 0 }}px {{ block.settings.padding-inline-end | default: 0 }}px;
+        inset-inline-start: {{ block.settings.padding-inline-start | default: 0 }}px;
         inset-block-start: {{ block.settings.padding-block-start | default: 0 }}px;
+        width: calc(100% - {{ block.settings.padding-inline-start | default: 0 }}px - {{ block.settings.padding-inline-end | default: 0 }}px);
         --padding-inline-start: 0px;
         --padding-inline-end: 0px;
         --padding-block-start: 0px;
@@ -103,8 +104,24 @@
     inset-block-start: 0;
     inset-inline: 0;
     aspect-ratio: var(--gallery-aspect-ratio);
+    max-height: 240px;
     z-index: 2;
     pointer-events: none;
+  }
+
+  /* Image is capped and letterboxed rather than cropped to fill; the overlay's
+     own max-height above keeps the badge/wishlist anchored to its actual
+     (now shorter) bottom edge instead of drifting to where the old, taller
+     aspect-ratio box would have ended. */
+  .product-card .product-media-container {
+    max-height: 240px;
+  }
+
+  /* The container sets --product-media-fit inline (per-slide media_fit), which
+     always wins over a CSS override of that same variable, so object-fit is
+     overridden directly here instead. */
+  .product-card .product-media-container.media-fit img {
+    object-fit: contain;
   }
 
   .product-card-media-overlay > * {

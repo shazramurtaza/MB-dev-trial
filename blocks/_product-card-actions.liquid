@@ -24,7 +24,8 @@
     position: relative;
     z-index: 1;
     display: flex;
-    gap: 12px;
+    gap: 8px;
+    margin-top: 10px;
   }
 
   .product-card-view-button {
@@ -60,17 +61,11 @@
   .product-card-hover-actions__quick-add {
     flex: 0 1 auto;
     max-width: 0;
-    margin-inline-start: -12px;
+    margin-inline-start: -8px;
     opacity: 0;
     overflow: hidden;
     transition: max-width var(--animation-speed, 0.2s) ease, opacity var(--animation-speed, 0.2s) ease,
       margin-inline-start var(--animation-speed, 0.2s) ease;
-
-    @media (hover: none) {
-      max-width: 48px;
-      margin-inline-start: 0;
-      opacity: 1;
-    }
   }
 
   .product-card:hover .product-card-hover-actions__quick-add,
@@ -78,6 +73,23 @@
     max-width: 48px;
     margin-inline-start: 0;
     opacity: 1;
+  }
+
+  /* Below the header's drawer breakpoint, pointers are touch and there's no
+     hover to reveal these - so show both by default instead of only on
+     hover/focus. */
+  @media screen and (max-width: 1024px) {
+    .product-card-view-button {
+      background: #a64a4c;
+      color: #fff;
+      border-color: #a64a4c;
+    }
+
+    .product-card-hover-actions__quick-add {
+      max-width: 48px;
+      margin-inline-start: 0;
+      opacity: 1;
+    }
   }
 
   .product-card-hover-actions__quick-add .quick-add {

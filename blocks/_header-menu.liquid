@@ -214,11 +214,16 @@
           "
         >
           {% assign class = 'overflow-menu' | append: background_color_classes %}
+          {% comment %}
+            No minimum-items: items that don't fit on the top row show on a
+            wrapped second row (styled below) instead of collapsing behind a
+            "More" trigger, so the header never needs a minimum-visible-count
+            fallback that would otherwise flip it into the mobile drawer style.
+          {% endcomment %}
           {% render 'overflow-list',
             class: class,
             ref: 'overflowMenu',
             children: children,
-            minimum-items: 2,
             data-testid: 'header-menu-overflow-list',
             attributes: 'data-skip-node-update'
           %}
@@ -306,6 +311,10 @@
     height: 100%;
   }
 
+  .header-menu__inner .menu-list {
+       margin: 0 0px 0px 16px;
+  }
+
   /* The real top-level items render inside <overflow-list>'s shadow DOM
      ([part="list"]), which this theme hard-zeros (see .overflow-menu::part(list)
      below) — so --menu-horizontal-gap alone never affected visible spacing.
@@ -322,7 +331,7 @@
   /* Items with a dropdown still need room for the chevron; give that room
      back on the end side only, so it doesn't throw off the 24px item gap. */
   .menu-list:not(.menu-list--mobile) .menu-list__trigger .menu-list__link-title {
-    padding-inline-end: 20px;
+    padding-inline-end: 10px;
   }
 
   .menu-list__list {
@@ -438,6 +447,7 @@
 
   .menu-list__list-item:not([slot='overflow']) {
     flex-direction: column;
+    margin-right: 6px;
   }
   .menu-list__list-item[slot='more']:has(.menu-list__link[aria-expanded='true'])::after {
     content: '';
@@ -745,6 +755,15 @@
     background-color: var(--color-foreground-muted);
     opacity: 0.1;
     border-radius: var(--menu-image-border-radius);
+  }
+
+  /* The generic .section--page-width margins size against the theme's global
+     page-width setting, which doesn't match the header's own hardcoded 1360px
+     container - so the dropdown drifted wider than the logo/nav row above it
+     and the page content below it. Pinning it to the same 1360px aligns them. */
+  .mega-menu {
+    max-width: 1360px;
+    margin-inline: auto;
   }
 
   .mega-menu__grid {

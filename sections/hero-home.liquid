@@ -97,6 +97,26 @@
   </div>
 </div>
 
+<script>
+  /**
+   * .page-wrapper (layout/theme.liquid) is its own scrolling container at
+   * >=990px (assets/base.css), not the document - so a native `#hash` link
+   * updates the URL but never actually scrolls anything. scrollIntoView()
+   * walks up to the nearest scrollable ancestor instead of assuming the
+   * document, so it works regardless of which element is the real container.
+   */
+  document.querySelectorAll('.hero-home__button[href^="#"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const target = document.getElementById(button.getAttribute('href').slice(1));
+      if (!target) return;
+
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', button.getAttribute('href'));
+    });
+  });
+</script>
+
 {% stylesheet %}
   .hero-home {
     position: relative;
@@ -173,7 +193,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 5px;
     width: auto;
     margin: 16px;
     padding: 15px 18px 16px;
@@ -183,8 +203,8 @@
 
     @media screen and (min-width: 750px) {
       position: absolute;
-      inset-inline-end: 48px;
-      bottom: 60px;
+      inset-inline-end: 6px;
+      bottom: 55px;
       width: 296px;
       margin: 0;
     }
@@ -238,6 +258,8 @@
     font-family: var(--font-body--family);
     font-size: 12px;
     line-height: 1.5;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
   }
 
   .hero-home__live-button {
@@ -294,13 +316,14 @@
       transform: translateY(-50%);
       gap: 48px;
       padding-inline: 80px;
+      padding-left: 40px;
     }
   }
 
   .hero-home__text {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 10px;
     max-width: 537px;
   }
 
@@ -344,6 +367,7 @@
 
     @media screen and (min-width: 750px) {
       font-size: 86px;
+      margin-bottom: 10px;
     }
   }
 
@@ -355,11 +379,13 @@
     font-weight: 700;
     font-size: 18px;
     line-height: 1.57;
+    text-transform: capitalize;
     color: var(--hero-home-feature-color, #050505);
 
     @media screen and (min-width: 750px) {
       font-size: 23px;
       line-height: 1.57;
+      margin-bottom: 5px;
     }
   }
 

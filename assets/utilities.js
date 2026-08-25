@@ -782,6 +782,14 @@ export class ResizeNotifier extends ResizeObserver {
 }
 
 /**
+ * Below this width, the header always uses the mobile drawer, even on a
+ * non-touch pointer with room to spare - matches the tablet breakpoint used
+ * elsewhere in the header layout. Keep in sync with the mirrored check in
+ * layout/theme.liquid.
+ */
+export const MENU_STYLE_DRAWER_BREAKPOINT = 1025;
+
+/**
  * Sets the menuStyle dataset attribute on the header component element.
  */
 export function setHeaderMenuStyle() {
@@ -790,7 +798,8 @@ export function setHeaderMenuStyle() {
     window.requestAnimationFrame(() => {
       const overflowList = headerComponent?.querySelector('overflow-list');
       const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
-      headerComponent.dataset.menuStyle = isTouchDevice() || hasReachedMinimum ? 'drawer' : 'menu';
+      const isNarrowViewport = window.innerWidth < MENU_STYLE_DRAWER_BREAKPOINT;
+      headerComponent.dataset.menuStyle = isTouchDevice() || hasReachedMinimum || isNarrowViewport ? 'drawer' : 'menu';
     });
   }
 }

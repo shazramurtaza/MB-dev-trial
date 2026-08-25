@@ -11,6 +11,7 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <div
+  id="best-sellers"
   data-testid="product-list"
   class="
     section
@@ -100,9 +101,25 @@
 </div>
 
 {% stylesheet %}
+  /* Keeps the section clear of the sticky header when scrolled to via the
+     hero's "Shop In-Stock Wigs" anchor link. */
+  #best-sellers {
+    scroll-margin-top: var(--header-height, 80px);
+    /* The carousel's --gutter-slide-width:0 (below) removes its own edge
+       gutter to kill card-peeking, which also strips the section's normal
+       page-margin inset below the 1360px container width - so it's added
+       back here directly, the same way shop-by-collection does it. */
+    padding-inline: 20px;
+  }
+
   .section-resource-list.section--page-width > * {
     max-width: 1360px;
     margin-inline: auto;
+  }
+
+  .section-resource-list,
+  .section-carousel {
+    row-gap: 10px;
   }
 
   .product-list__rating {
