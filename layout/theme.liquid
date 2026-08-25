@@ -154,7 +154,8 @@
 
         /**
          * Sets the initial menu style (inline menu vs. drawer) on the header component.
-         * Mimics setHeaderMenuStyle() in utilities.js
+         * Mimics setHeaderMenuStyle() in utilities.js - keep the breakpoint (1025) in sync
+         * with MENU_STYLE_DRAWER_BREAKPOINT there.
          */
         (function setHeaderMenuStyle() {
           const headerComponent = document.querySelector('#header-component');
@@ -162,7 +163,9 @@
             const isTouchDevice = 'ontouchstart' in window && navigator.maxTouchPoints > 0;
             const overflowList = headerComponent.querySelector('overflow-list');
             const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
-            headerComponent.dataset.menuStyle = isTouchDevice || hasReachedMinimum ? 'drawer' : 'menu';
+            const isNarrowViewport = window.innerWidth < 1025;
+            headerComponent.dataset.menuStyle =
+              isTouchDevice || hasReachedMinimum || isNarrowViewport ? 'drawer' : 'menu';
           }
         })();
       </script>

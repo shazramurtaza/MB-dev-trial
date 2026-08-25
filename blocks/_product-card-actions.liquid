@@ -1,0 +1,192 @@
+
+
+{% assign product = closest.product %}
+
+{% unless product == blank %}
+  <div
+    class="product-card-hover-actions"
+    style="padding-inline: {{ block.settings.padding-inline-start | default: 0 }}px {{ block.settings.padding-inline-end | default: 0 }}px;"
+    {{ block.shopify_attributes }}
+  >
+    <a href="{{ product.url }}" class="product-card-view-button">
+      {{- 'actions.view_product' | t -}}
+    </a>
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      <div class="product-card-hover-actions__quick-add">
+        {% render 'quick-add', product: product, section_id: section.id %}
+      </div>
+    {% endif %}
+  </div>
+{% endunless %}
+
+{% stylesheet %}
+  .product-card-hover-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .product-card-view-button {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding-inline: 24px;
+    background: var(--color-background);
+    color: var(--color-secondary-button-text);
+    border: 1px solid var(--color-secondary-button-border);
+    border-radius: 2px;
+    font-family: var(--font-body--family);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--animation-speed, 0.2s) ease, color var(--animation-speed, 0.2s) ease,
+      border-color var(--animation-speed, 0.2s) ease;
+  }
+
+  .product-card:hover .product-card-view-button,
+  .product-card:focus-within .product-card-view-button,
+  .product-card-view-button:hover {
+    background: #a64a4c;
+    color: #fff;
+    border-color: #a64a4c;
+  }
+
+  .product-card-hover-actions__quick-add {
+    flex: 0 1 auto;
+    max-width: 0;
+    margin-inline-start: -8px;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width var(--animation-speed, 0.2s) ease, opacity var(--animation-speed, 0.2s) ease,
+      margin-inline-start var(--animation-speed, 0.2s) ease;
+  }
+
+  .product-card:hover .product-card-hover-actions__quick-add,
+  .product-card:focus-within .product-card-hover-actions__quick-add {
+    max-width: 48px;
+    margin-inline-start: 0;
+    opacity: 1;
+  }
+
+  /* Below the header's drawer breakpoint, pointers are touch and there's no
+     hover to reveal these - so show both by default instead of only on
+     hover/focus. */
+  @media screen and (max-width: 1024px) {
+    .product-card-view-button {
+      background: #a64a4c;
+      color: #fff;
+      border-color: #a64a4c;
+    }
+
+    .product-card-hover-actions__quick-add {
+      max-width: 48px;
+      margin-inline-start: 0;
+      opacity: 1;
+    }
+  }
+
+  .product-card-hover-actions__quick-add .quick-add {
+    position: static;
+    inset: auto;
+    pointer-events: auto;
+  }
+
+  /* Quick buy: a fixed-size icon-only square button (Figma "shopping-cart-02"),
+     not the pill that expands to reveal "Add to cart" text elsewhere on the site. */
+  .product-card-hover-actions .quick-add__button {
+    --quick-add-expanded-width: 48px;
+    --quick-add-icon-width: 48px;
+
+    position: static;
+    inset: auto;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    border: 1px solid #bc696b;
+    border-radius: 2px;
+    opacity: 1;
+    white-space: nowrap;
+  }
+
+  .product-card-hover-actions .quick-add__button:hover {
+    /* The shared button scales up 1.03x on hover; this wrapper's overflow:hidden
+       clips that growth against its own edges, cutting the icon. Figma's icon is
+       static, so cancel the scale rather than add slack to the wrapper. */
+    scale: 1;
+    padding-inline-end: 0;
+  }
+
+  /* Swap the shared add-to-cart bag icon for the Figma cart icon, scoped to this
+     button only. The "added" checkmark state still works: it lives on the same
+     .add-to-cart-icon element this mask is layered onto, so it inherits its
+     parent's opacity toggle. */
+  .product-card-hover-actions .quick-add__button .add-to-cart-icon {
+    position: relative;
+  }
+
+  .product-card-hover-actions .quick-add__button .add-to-cart-icon svg {
+    visibility: hidden;
+  }
+
+  .product-card-hover-actions .quick-add__button .add-to-cart-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: #bc696b;
+    mask: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNC4yMjIyIDI2LjAwMSIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTcuNjY0MTYgMTcuODAyMkwxNy4zNTI2IDE2LjkzMDJDMjAuMzg0MSAxNi42NTc1IDIxLjA2NDYgMTUuOTQyMyAyMS40MDA2IDEyLjY3NzFMMjIuMTA3OCA1LjgwMjczIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuNDQ1NDEgNS44MDI3M0gyMy4yMjIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuNDQ0ODUgMjUuMDAxQzYuNjcyMDggMjUuMDAxIDcuNjY2OTUgMjMuOTI2NSA3LjY2Njk1IDIyLjYwMTFDNy42NjY5NSAyMS4yNzU2IDYuNjcyMDggMjAuMjAxMiA1LjQ0NDg1IDIwLjIwMTJDNC4yMTc2MiAyMC4yMDEyIDMuMjIyNzUgMjEuMjc1NiAzLjIyMjc1IDIyLjYwMTFDMy4yMjI3NSAyMy45MjY1IDQuMjE3NjIgMjUuMDAxIDUuNDQ0ODUgMjUuMDAxWiIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTcuNjY3NSAyNS4wMDFDMTguODk0NyAyNS4wMDEgMTkuODg5NiAyMy45MjY1IDE5Ljg4OTYgMjIuNjAxMUMxOS44ODk2IDIxLjI3NTYgMTguODk0NyAyMC4yMDEyIDE3LjY2NzUgMjAuMjAxMkMxNi40NDAzIDIwLjIwMTIgMTUuNDQ1NCAyMS4yNzU2IDE1LjQ0NTQgMjIuNjAxMUMxNS40NDU0IDIzLjkyNjUgMTYuNDQwMyAyNS4wMDEgMTcuNjY3NSAyNS4wMDFaIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik03LjY2NDE2IDIyLjU5OTZIMTUuNDQxNSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xIDFIMi4wNzMyN0MzLjEyMjg2IDEgNC4wMzc3NiAxLjc0OTQ4IDQuMjkyMzMgMi44MTc4NEw3LjU5Nzk5IDE2LjY5MTFDNy43NjUwMyAxNy4zOTIzIDcuNjIyMDggMTguMTM0OSA3LjIwODgxIDE4LjcxMzJMNi4xNDY1MiAyMC4xOTkyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+')
+      center / 20px 22px no-repeat;
+    -webkit-mask: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNC4yMjIyIDI2LjAwMSIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTcuNjY0MTYgMTcuODAyMkwxNy4zNTI2IDE2LjkzMDJDMjAuMzg0MSAxNi42NTc1IDIxLjA2NDYgMTUuOTQyMyAyMS40MDA2IDEyLjY3NzFMMjIuMTA3OCA1LjgwMjczIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuNDQ1NDEgNS44MDI3M0gyMy4yMjIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuNDQ0ODUgMjUuMDAxQzYuNjcyMDggMjUuMDAxIDcuNjY2OTUgMjMuOTI2NSA3LjY2Njk1IDIyLjYwMTFDNy42NjY5NSAyMS4yNzU2IDYuNjcyMDggMjAuMjAxMiA1LjQ0NDg1IDIwLjIwMTJDNC4yMTc2MiAyMC4yMDEyIDMuMjIyNzUgMjEuMjc1NiAzLjIyMjc1IDIyLjYwMTFDMy4yMjI3NSAyMy45MjY1IDQuMjE3NjIgMjUuMDAxIDUuNDQ0ODUgMjUuMDAxWiIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTcuNjY3NSAyNS4wMDFDMTguODk0NyAyNS4wMDEgMTkuODg5NiAyMy45MjY1IDE5Ljg4OTYgMjIuNjAxMUMxOS44ODk2IDIxLjI3NTYgMTguODk0NyAyMC4yMDEyIDE3LjY2NzUgMjAuMjAxMkMxNi40NDAzIDIwLjIwMTIgMTUuNDQ1NCAyMS4yNzU2IDE1LjQ0NTQgMjIuNjAxMUMxNS40NDU0IDIzLjkyNjUgMTYuNDQwMyAyNS4wMDEgMTcuNjY3NSAyNS4wMDFaIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik03LjY2NDE2IDIyLjU5OTZIMTUuNDQxNSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xIDFIMi4wNzMyN0MzLjEyMjg2IDEgNC4wMzc3NiAxLjc0OTQ4IDQuMjkyMzMgMi44MTc4NEw3LjU5Nzk5IDE2LjY5MTFDNy43NjUwMyAxNy4zOTIzIDcuNjIyMDggMTguMTM0OSA3LjIwODgxIDE4LjcxMzJMNi4xNDY1MiAyMC4xOTkyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+')
+      center / 20px 22px no-repeat;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_buy_buttons",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_product"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_buy_buttons",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,105 @@
+{% liquid
+  assign rating_value = block.settings.rating_value
+  assign rating_count = block.settings.rating_count
+%}
+
+{% if rating_value != blank %}
+  <div
+    class="hardcoded-rating"
+    style="padding-inline: {{ block.settings.padding-inline-start | default: 0 }}px {{ block.settings.padding-inline-end | default: 0 }}px;"
+    {{ block.shopify_attributes }}
+  >
+    <span class="hardcoded-rating__stars">
+      {% for i in (1..5) %}
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          {%- render 'icon', icon: 'hero-rating-star' -%}
+        </svg>
+      {% endfor %}
+    </span>
+    <span class="hardcoded-rating__text">
+      {{- rating_value -}}
+      {%- if rating_count != blank %} ({{ rating_count }}){% endif -%}
+    </span>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .hardcoded-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .hardcoded-rating__stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .hardcoded-rating__stars svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .hardcoded-rating__text {
+    font-family: var(--font-body--family);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--color-foreground);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.hardcoded_rating",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.hardcoded_rating_info"
+    },
+    {
+      "type": "text",
+      "id": "rating_value",
+      "label": "t:settings.rating_value",
+      "default": "4.8"
+    },
+    {
+      "type": "text",
+      "id": "rating_count",
+      "label": "t:settings.rating_count",
+      "default": "120"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.hardcoded_rating",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

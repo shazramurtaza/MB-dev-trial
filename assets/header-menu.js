@@ -57,7 +57,35 @@ class HeaderMenu extends Component {
    */
   #resizeListener = debounce(() => {
     setHeaderMenuStyle();
+    this.#refreshOpenSubmenuGeometry();
   }, 100);
+
+  /**
+   * activate() measures the open submenu's height and the header's own
+   * height once, at the moment a menu item opens, and caches them in
+   * --submenu-height / --full-open-header-height for as long as it stays
+   * open. A resize can change either measurement (submenu content
+   * reflowing to a different column count, the header itself wrapping to a
+   * different height) without the submenu ever closing, so those cached
+   * values go stale and the dropdown keeps whatever position/size it had
+   * when it first opened. Re-measuring on resize keeps it in sync.
+   */
+  #refreshOpenSubmenuGeometry = () => {
+    const item = this.#state.activeItem;
+    if (!item || !this.headerComponent) return;
+
+    const listItem = item.closest('.menu-list__list-item');
+    const isMoreTrigger = listItem instanceof HTMLElement && listItem.slot === 'more';
+    const submenu = isMoreTrigger ? this.overflowMenu : findSubmenu(item);
+    if (!submenu) return;
+
+    const submenuHeight = isMoreTrigger
+      ? Math.max(this.overflowMenu?.offsetHeight || 0, this.#getOverflowListLinksHeight())
+      : submenu.offsetHeight;
+
+    this.headerComponent.style.setProperty('--submenu-height', `${submenuHeight}px`);
+    this.#setFullOpenHeaderHeight(submenuHeight, this.#getHeaderVisibleHeight());
+  };
 
   #overflowSubmenuListener = () => {
     this.#deactivate();

@@ -1,0 +1,118 @@
+{% doc %}
+  Renders a persistent inline search field for the header (as opposed to an icon
+  that opens the search modal). Submits a normal search request; does not wire up
+  live predictive results, since `predictive-search-component` currently assumes
+  it lives inside a search dialog.
+
+  @param {string} [class] - Additional class names for the wrapping form.
+  @param {string} [text_color] - Overrides the input/icon text color (falls back to white).
+  @param {string} [placeholder] - Placeholder text (falls back to the theme's default search placeholder).
+{% enddoc %}
+
+{%- liquid
+  if placeholder != blank
+    assign search_placeholder = placeholder
+  else
+    assign search_placeholder = 'content.search_input_placeholder' | t
+  endif
+-%}
+
+<form
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  class="header-search-input {{ class }}"
+  {% if text_color != blank %}
+    style="--header-search-input-text-color: {{ text_color }};"
+  {% endif %}
+>
+  <input
+    type="search"
+    name="q"
+    class="header-search-input__field"
+    placeholder="{{ search_placeholder }}"
+    value="{{ search.terms | escape }}"
+    autocomplete="off"
+  >
+  <button
+    type="submit"
+    class="header-search-input__submit button-unstyled"
+    aria-label="{{ 'content.search_input_label' | t }}"
+  >
+    <span class="svg-wrapper">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {%- render 'icon', icon: 'nav-search' -%}
+      </svg>
+    </span>
+  </button>
+</form>
+
+{% stylesheet %}
+  .header-search-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: var(--header-search-input-width, 248px);
+    height: 100%;
+    padding: 6px 10px 6px 12px;
+    border: 1px solid var(--header-search-input-border-color, rgba(226, 226, 226, 0.46));
+    background: transparent;
+  }
+
+  /* Matches the specificity of base.css's `input:not([type="checkbox"], [type="radio"])`
+     rule (which counts :not()'s argument toward specificity) so this wins on source
+     order without needing !important. */
+  input.header-search-input__field {
+    flex: 1 1 auto;
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    padding: 0;
+    font-family: var(--font-body--family);
+    font-size: 14px;
+    color: var(--header-search-input-text-color, #fff);
+
+    &::placeholder {
+      color: var(--header-search-input-placeholder-color, rgba(255, 255, 255, 0.55));
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+
+  .header-search-input__submit {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--header-search-input-text-color, #fff);
+    cursor: pointer;
+  }
+
+  .header-search-input__submit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--minimum-touch-target, 44px);
+    height: var(--minimum-touch-target, 44px);
+    transform: translate(-50%, -50%);
+  }
+
+  .header-search-input__submit .svg-wrapper {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media screen and (max-width: 989px) {
+    .header-search-input {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}

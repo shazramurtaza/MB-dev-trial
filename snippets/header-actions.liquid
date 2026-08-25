@@ -31,7 +31,9 @@
       class="svg-wrapper {% if display_style != 'icon' %}desktop:hidden{% endif %}"
       aria-hidden="true"
     >
-      {{ 'icon-cart.svg' | inline_asset_content }}
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {%- render 'icon', icon: 'nav-cart' -%}
+      </svg>
     </span>
 
     {% render 'cart-bubble', limit: 100 %}
@@ -41,19 +43,14 @@
 {% capture account_icon %}
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="15"
-    height="17"
-    viewBox="0 0 15 17"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
     fill="none"
     slot="signed-out-avatar"
     class="account-button__icon"
   >
-    <path
-      stroke="currentColor"
-      stroke-linejoin="round"
-      stroke-width="var(--icon-stroke-width)"
-      d="M10.375 3.813a3.063 3.063 0 1 1-6.125 0 3.063 3.063 0 0 1 6.125 0ZM7.313 9.5c-3.667 0-6.24 2.691-6.563 6.125h13.125C13.552 12.191 10.979 9.5 7.312 9.5Z"
-    />
+    {%- render 'icon', icon: 'nav-user' -%}
   </svg>
 {% endcapture %}
 
@@ -248,9 +245,11 @@
   }
 
   .header-actions__cart-icon {
-    --cart-bubble-size: 20px;
-    --cart-bubble-top: 4.5px;
-    --cart-bubble-right: 2.5px;
+    /* Figma's badge is a small corner accent on the 16px icon, not a bubble
+       nearly as big as the icon itself. */
+    --cart-bubble-size: 12px;
+    --cart-bubble-top: -2px;
+    --cart-bubble-right: -2px;
 
     position: relative;
   }

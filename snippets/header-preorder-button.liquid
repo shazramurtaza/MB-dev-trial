@@ -1,0 +1,61 @@
+{% doc %}
+  Renders a standalone highlighted CTA pill next to the main menu (e.g. "Pre-Order").
+  Independent of the navigation linklist so it can be toggled without editing the menu.
+
+  @param {object} section - The section object providing the preorder_* settings.
+{% enddoc %}
+
+{%- liquid
+  assign preorder_label = section.settings.preorder_button_label
+  assign preorder_link = section.settings.preorder_button_link
+-%}
+
+{%- if section.settings.show_preorder_button and preorder_label != blank -%}
+  <a
+    href="{{ preorder_link | default: '#' }}"
+    class="header-preorder-button"
+    style="
+      --header-preorder-background-color: {{ section.settings.preorder_button_background_color }};
+      --header-preorder-text-color: {{ section.settings.preorder_button_text_color }};
+    "
+    {% if preorder_link == blank %}
+      aria-disabled="true"
+      tabindex="-1"
+    {% endif %}
+  >
+    {{- preorder_label -}}
+  </a>
+{%- endif -%}
+
+{% stylesheet %}
+  .header-preorder-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 7px;
+    background-color: var(--header-preorder-background-color, #a64a4c);
+    color: var(--header-preorder-text-color, #fff);
+    font-family: var(--font-body--family);
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 1.833;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .header-preorder-button:hover {
+    text-decoration: none;
+  }
+
+  .header-preorder-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--minimum-touch-target, 44px));
+    height: max(100%, var(--minimum-touch-target, 44px));
+    transform: translate(-50%, -50%);
+  }
+{% endstylesheet %}

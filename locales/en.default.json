@@ -68,6 +68,8 @@
     "price_filter_high": "High price"
   },
   "actions": {
+    "add_to_wishlist": "Add to wishlist",
+    "view_product": "View product",
     // Quick add button on product cards, shortened version of add to cart
     "add": "Add",
     "add_to_cart": "Add to cart",

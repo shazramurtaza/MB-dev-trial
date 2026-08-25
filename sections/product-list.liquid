@@ -11,6 +11,7 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <div
+  id="best-sellers"
   data-testid="product-list"
   class="
     section
@@ -25,6 +26,19 @@
     {% render 'gap-style', value: section.settings.gap %}
   "
 >
+  {% if section.settings.show_header_rating %}
+    <div class="product-list__rating">
+      <span class="product-list__rating-stars">
+        {% for i in (1..5) %}
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            {%- render 'icon', icon: 'hero-rating-star' -%}
+          </svg>
+        {% endfor %}
+      </span>
+      <span class="product-list__rating-text">{{ section.settings.header_rating_text }}</span>
+    </div>
+  {% endif %}
+
   <div class="section-resource-list__header">
     {%- content_for 'block', type: '_product-list-content', id: 'static-header' -%}
   </div>
@@ -86,6 +100,60 @@
   </div>
 </div>
 
+{% stylesheet %}
+  /* Keeps the section clear of the sticky header when scrolled to via the
+     hero's "Shop In-Stock Wigs" anchor link. */
+  #best-sellers {
+    scroll-margin-top: var(--header-height, 80px);
+    /* The carousel's --gutter-slide-width:0 (below) removes its own edge
+       gutter to kill card-peeking, which also strips the section's normal
+       page-margin inset below the 1360px container width - so it's added
+       back here directly, the same way shop-by-collection does it. */
+    padding-inline: 20px;
+  }
+
+  .section-resource-list.section--page-width > * {
+    max-width: 1360px;
+    margin-inline: auto;
+  }
+
+  .section-resource-list,
+  .section-carousel {
+    row-gap: 10px;
+  }
+
+  .product-list__rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 4px 8px;
+    border: 1px solid #bc696b;
+    border-radius: 9999px;
+  }
+
+  .product-list__rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .product-list__rating-stars svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .product-list__rating-text {
+    font-family: var(--font-body--family);
+    font-size: 14px;
+    line-height: 24px;
+    color: var(--color-foreground);
+    white-space: nowrap;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "t:names.product_list",
@@ -105,6 +173,19 @@
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_header_rating",
+      "label": "t:settings.show_rating_badge",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "header_rating_text",
+      "label": "t:settings.text",
+      "default": "500+ verified 5-star reviews",
+      "visible_if": "{{ section.settings.show_header_rating }}"
+    },
     {
       "type": "collection",
       "id": "collection",
@@ -266,6 +347,13 @@
       ],
       "default": "none",
       "visible_if": "{{ section.settings.icons_style != 'none' and section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "t:settings.show_progress_bar",
+      "default": false,
+      "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
     },
     {
       "type": "header",

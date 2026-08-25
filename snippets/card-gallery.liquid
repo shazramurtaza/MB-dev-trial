@@ -435,6 +435,13 @@
     }
   }
 
+  /* These previous/next arrows only ever cycle variant images that are
+     already reachable via the swatches, so on hover they read as decorative
+     controls that do nothing when clicked - hidden on card galleries. */
+  .card-gallery slideshow-arrows {
+    display: none;
+  }
+
   /*
    * Card galleries preview the next or previous images on 'pointerenter', so we
    * try to kick load them beforehand (they are lazy loaded otherwise).

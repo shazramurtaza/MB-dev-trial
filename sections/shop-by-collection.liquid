@@ -1,0 +1,185 @@
+{% liquid
+  assign settings = section.settings
+%}
+
+<div class="shop-by-collection" style="background-color: {{ settings.background_color }};">
+  <div
+    class="shop-by-collection__container"
+    style="
+      --shop-by-collection-columns-desktop: {{ settings.columns_desktop }};
+      --shop-by-collection-columns-mobile: {{ settings.mobile_columns }};
+      --shop-by-collection-gap: {{ settings.gap }}px;
+    "
+  >
+    {% if settings.heading != blank or settings.subheading != blank %}
+      <div class="shop-by-collection__heading">
+        {% if settings.heading != blank %}
+          <h2 class="shop-by-collection__title">{{ settings.heading }}</h2>
+        {% endif %}
+        {% if settings.subheading != blank %}
+          <p class="shop-by-collection__subtitle">{{ settings.subheading }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="shop-by-collection__grid">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* Small mobile/tablet-only gutter on the outer element — symmetric, so it
+     just insets where the 1360px box sits and doesn't compete with its
+     max-width the way padding on the box itself would. */
+  .shop-by-collection {
+    padding-inline: 20px;
+  }
+
+  .shop-by-collection__container {
+    max-width: 1360px;
+    margin-inline: auto;
+    padding-block: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    @media screen and (min-width: 750px) {
+      padding-block: 80px;
+      gap: 48px;
+    }
+  }
+
+  .shop-by-collection__heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 624px;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .shop-by-collection__title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 32px;
+    line-height: 1.15;
+    color: #000;
+
+    @media screen and (min-width: 750px) {
+      font-size: 56px;
+      line-height: 1.15;
+    }
+  }
+
+  .shop-by-collection__subtitle {
+    margin: 0;
+    font-family: var(--font-body--family);
+    font-size: 16px;
+    line-height: 1.4;
+    color: #000;
+
+    @media screen and (min-width: 750px) {
+      font-size: 20px;
+    }
+  }
+
+  .shop-by-collection__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--shop-by-collection-columns-mobile, 2), 1fr);
+    gap: var(--shop-by-collection-gap, 15px);
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: repeat(var(--shop-by-collection-columns-desktop, 4), 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.shop_by_collection",
+  "class": "shop-by-collection-section",
+  "blocks": [
+    {
+      "type": "_shop-collection-item"
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Shop By Collection"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:settings.subheading",
+      "default": "The styles our community can't stop buying."
+    },
+    {
+      "type": "header",
+      "content": "t:content.grid_layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "t:settings.columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "t:settings.mobile_columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:options.one_number"
+        },
+        {
+          "value": "2",
+          "label": "t:options.two_number"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.shop_by_collection",
+      "blocks": {
+        "item_1": { "type": "_shop-collection-item", "settings": { "custom_title": "Everyday Collection" } },
+        "item_2": { "type": "_shop-collection-item", "settings": { "custom_title": "Signature Collection" } },
+        "item_3": { "type": "_shop-collection-item", "settings": { "custom_title": "Studio Collection" } },
+        "item_4": { "type": "_shop-collection-item", "settings": { "custom_title": "Atelier Collection" } }
+      },
+      "block_order": ["item_1", "item_2", "item_3", "item_4"]
+    }
+  ]
+}
+{% endschema %}

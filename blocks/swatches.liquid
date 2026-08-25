@@ -8,6 +8,15 @@
     if swatch_count > 0
       assign product_has_swatches = true
     endif
+
+    if settings.show_variant_image
+      for product_option_value in product_option.values
+        if product_option_value.variant.featured_media
+          assign product_has_swatches = true
+          break
+        endif
+      endfor
+    endif
   endfor
 -%}
 
@@ -19,6 +28,33 @@
     overflow: hidden;
     gap: 0;
     flex-shrink: 0;
+  }
+
+  /* Figma calls for smaller dots on the product card than the sitewide default. */
+  .product-card .swatch {
+    --swatch-width: 15px;
+    --swatch-height: 15px;
+    --variant-picker-swatch-radius: 7.5px;
+  }
+
+  .product-card swatches-variant-picker-component overflow-list::part(list) {
+    gap: 4px;
+  }
+
+  /* Caps how many dots overflow-list can fit to exactly 5 (fewer if the
+     product has fewer options) - wide enough for 5 dots + the "+N" count,
+     too narrow for a 6th, regardless of how much room the card would
+     otherwise give it. Set directly on overflow-list (not an ancestor):
+     its own reflow measures its own box, and flex ancestors above it would
+     otherwise refuse to shrink below their natural content width and just
+     get visually clipped rather than actually constraining the count. */
+  .product-card overflow-list {
+    display: block;
+    max-width: 170px;
+  }
+
+  .product-card .variant-option--buttons {
+    margin-bottom: 10px;
   }
 {% endstylesheet %}
 
